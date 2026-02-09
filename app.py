@@ -9,6 +9,7 @@ import os
 from dubizzle_client import DubizzleClient
 from filters import QueryBuilder
 from exporter import Exporter
+from evaluator import PriceEvaluator
 from config import PRIMARY_INDEX, DEFAULT_HITS_PER_PAGE
 
 # Configure logging
@@ -74,13 +75,17 @@ async def scrape_listings(req: ScrapeRequest):
             for hit in hits:
                 all_results.append(Exporter.format_listing(hit))
                 
+                
             if page + 1 >= nb_pages:
                 break
+        
+        evaluation = PriceEvaluator.calculate_stats(all_results)
                 
         return {
             "status": "success",
             "total_results": len(all_results),
-            "data": all_results
+            "data": all_results,
+            "evaluation": evaluation
         }
         
     except Exception as e:

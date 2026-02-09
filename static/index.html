@@ -47,6 +47,7 @@
             margin-bottom: 0.5rem;
             background: linear-gradient(90deg, #ff4d4d, #f97316);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -248,6 +249,43 @@
             color: #64748b;
         }
 
+        .evaluation-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(0, 206, 201, 0.1), rgba(0, 206, 201, 0.05));
+            border: 1px solid rgba(0, 206, 201, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .eval-item {
+            text-align: center;
+        }
+
+        .eval-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .eval-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .eval-robust {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             body { padding: 1rem; }
@@ -347,6 +385,9 @@
                 submitBtn.disabled = false;
 
                 if (result.status === 'success' && result.data.length > 0) {
+                    if (result.evaluation) {
+                        renderEvaluation(result.evaluation);
+                    }
                     renderResults(result.data);
                 } else {
                     resultsGrid.innerHTML = '<div class="empty-state">No vehicles found matching your criteria</div>';
@@ -358,6 +399,25 @@
                 resultsGrid.innerHTML = '<div class="empty-state" style="color: #ff4d4d">An error occurred while fetching data. Please try again.</div>';
             }
         });
+
+        function renderEvaluation(eval) {
+            const evalCard = document.createElement('div');
+            evalCard.className = 'evaluation-card';
+            
+            evalCard.innerHTML = `
+                <div class="eval-item">
+                    <div class="eval-label">Average Market Price</div>
+                    <div class="eval-value">${Math.round(eval.average_price).toLocaleString()} AED</div>
+                    <div class="eval-robust">${eval.is_robust ? '✓ Filtered Outliers' : '⚠ Limited Data'}</div>
+                </div>
+                <div class="eval-item">
+                    <div class="eval-label">Price Range</div>
+                    <div class="eval-value">${Math.round(eval.min_price).toLocaleString()} - ${Math.round(eval.max_price).toLocaleString()}</div>
+                    <div class="eval-label">Based on ${eval.total_evaluated} listings</div>
+                </div>
+            `;
+            resultsGrid.appendChild(evalCard);
+        }
 
         function renderResults(cars) {
             cars.forEach((car, index) => {
