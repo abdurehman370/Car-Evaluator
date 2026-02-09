@@ -1,0 +1,19 @@
+# Virtual environments
+venv/
+.env/
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Playwright / browsers
+ms-playwright/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
