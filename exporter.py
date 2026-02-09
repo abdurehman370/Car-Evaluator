@@ -32,6 +32,14 @@ class Exporter:
         abs_url_obj = hit.get('absolute_url', {})
         listing_url = abs_url_obj.get('en') if isinstance(abs_url_obj, dict) else hit.get('absolute_url', 'N/A')
         
+        # Image URL with fallback
+        image_url = hit.get('photo')
+        if not image_url and isinstance(hit.get('photos'), dict):
+            image_url = hit.get('photos', {}).get('main')
+            
+        if not image_url:
+            image_url = 'N/A'
+        
         return {
             "title": title,
             "price": price,
@@ -40,6 +48,7 @@ class Exporter:
             "variant": variant,
             "location": location,
             "listing_url": listing_url,
+            "image_url": image_url,
             "scraped_at": datetime.now().isoformat()
         }
 

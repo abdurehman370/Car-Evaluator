@@ -150,6 +150,26 @@
             display: flex;
             flex-direction: column;
             animation: fadeIn 0.5s ease-out forwards;
+            height: 100%;
+        }
+
+        .card-image-container {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #1e293b;
+            position: relative;
+        }
+
+        .car-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .car-card:hover .car-image {
+            transform: scale(1.1);
         }
 
         .car-card:hover {
@@ -426,12 +446,18 @@
                 card.style.animationDelay = `${index * 0.05}s`;
                 
                 card.innerHTML = `
+                    <div class="card-image-container" onclick="window.open('${car.listing_url}', '_blank')">
+                        <img src="${(car.image_url && car.image_url !== 'N/A') ? car.image_url : 'https://via.placeholder.com/400x300?text=No+Image+Available'}" 
+                             alt="${car.title}" 
+                             class="car-image"
+                             onerror="this.src='https://via.placeholder.com/400x300?text=Image+Load+Error'">
+                    </div>
                     <div class="card-content" onclick="window.open('${car.listing_url}', '_blank')">
                         <div class="card-title">${car.title}</div>
-                        <div class="card-price">${car.price.toLocaleString()} AED</div>
+                        <div class="card-price">${typeof car.price === 'number' ? car.price.toLocaleString() : car.price} AED</div>
                         <div class="card-info">
                             <div class="info-item">📅 ${car.year}</div>
-                            <div class="info-item">🛣️ ${car.mileage.toLocaleString()} KM</div>
+                            <div class="info-item">🛣️ ${typeof car.mileage === 'number' ? car.mileage.toLocaleString() : car.mileage} KM</div>
                             <div class="info-item">🔩 ${car.variant || 'N/A'}</div>
                         </div>
                         <div class="location">📍 ${car.location}</div>
