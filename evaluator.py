@@ -1,5 +1,6 @@
 import statistics
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,44 @@ class PriceEvaluator:
             "invalid_count": invalid_count,
             "is_robust": True
         }
+        
+        return stats
+
+    @staticmethod
+    def calculate_valuation(results, vehicle_input):
+        """
+        Calculates an estimated valuation based on market results and vehicle-specific details (year, mileage).
+        """
+        stats = PriceEvaluator.calculate_stats(results)
+        if not stats:
+            return None
+
+        median_price = stats['median_price']
+        current_year = datetime.now().year
+        
+        try:
+            vehicle_year = int(vehicle_input.get('year') or current_year)
+            actual_km = int(vehicle_input.get('mileage') or 0)
+        except (ValueError, TypeError):
+            vehicle_year = current_year
+            actual_km = 0
+            
+        years_old = max(0, current_year - vehicle_year)
+        # Assuming 15k km per year as standard
+        expected_km = years_old * 15000
+        
+        # Simple penalty for over-mileage (can be refined per region)
+        # Using 0.05 AED/SAR/USD per km as a baseline
+        penalty_per_km = 0.05 
+        over_mileage = max(0, actual_km - expected_km)
+        penalty = over_mileage * penalty_per_km
+        
+        estimated_price = max(0, median_price - penalty)
+        
+        # Add to stats
+        stats["estimated_price"] = round(estimated_price, 2)
+        stats["penalty_applied"] = round(penalty, 2)
+        stats["expected_mileage"] = expected_km
         
         return stats
 

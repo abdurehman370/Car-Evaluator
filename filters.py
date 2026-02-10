@@ -19,12 +19,26 @@ class QueryBuilder:
 
         # Base category filter
         category_path = "motors/used-cars"
+        query_text = ""
+        
         if args.make:
             category_path += f"/{args.make.lower()}"
+        
         if args.model:
-            category_path += f"/{args.model.lower()}"
+            model_lower = (args.model or "").lower()
+            model_parts = model_lower.split()
+            # Use the first word for the category path (e.g. "a5" from "a5 sportback")
+            if model_parts:
+                category_path += f"/{model_parts[0]}"
+            
+            # Combine model and variant for the search query
+            variant_text = (getattr(args, 'variant', '') or '').lower()
+            query_text = f"{model_lower} {variant_text}".strip()
+        elif getattr(args, 'variant', None):
+            query_text = (args.variant or "").lower()
         
         filter_str = f'("category_v2.slug_paths":"{category_path}")'
+        params_list.append(f"query={query_text}")
 
         # Additional filters
         numeric_filters = []

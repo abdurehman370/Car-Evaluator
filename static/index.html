@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,7 +87,8 @@
             font-weight: 400;
         }
 
-        input, select {
+        input,
+        select {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 0.8rem 1rem;
@@ -235,23 +237,49 @@
         }
 
         @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .loading-container {
@@ -308,22 +336,52 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            body { padding: 1rem; }
-            h1 { font-size: 2rem; }
-            .search-panel { padding: 1.5rem; }
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .search-panel {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
             <h1>Dubizzle Premium Scraper</h1>
-            <p class="subtitle">Search 40,000+ used cars in UAE using official API</p>
+            <p class="subtitle">Search used cars in UAE and Lebanon</p>
         </header>
 
         <section class="search-panel">
             <form id="scrape-form">
                 <div class="form-grid">
+                    <div class="form-group">
+                        <label for="region">Region</label>
+                        <select id="region">
+                            <option value="UAE">UAE (Dubizzle)</option>
+                            <option value="Lebanon">Lebanon (OLX)</option>
+                            <option value="Europe">Europe (AutoScout24)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="country-group" style="display: none;">
+                        <label for="country">Country</label>
+                        <select id="country">
+                            <option value="Germany">Germany</option>
+                            <option value="France">France</option>
+                            <option value="Netherlands">Netherlands</option>
+                            <option value="Italy">Italy</option>
+                            <option value="Belgium">Belgium</option>
+                            <option value="Austria">Austria</option>
+                            <option value="Spain">Spain</option>
+                        </select>
+                    </div>
                     <div class="input-group">
                         <label>Make</label>
                         <input type="text" id="make" placeholder="e.g. toyota">
@@ -331,6 +389,10 @@
                     <div class="input-group">
                         <label>Model</label>
                         <input type="text" id="model" placeholder="e.g. camry">
+                    </div>
+                    <div class="input-group">
+                        <label>Variant</label>
+                        <input type="text" id="variant" placeholder="e.g. Avant, M Sport">
                     </div>
                     <div class="input-group">
                         <label>Year Min</label>
@@ -361,7 +423,7 @@
 
         <div id="loading" class="loading-container">
             <span class="loader"></span>
-            <p>Scanning Dubizzle Database...</p>
+            <p>Scanning Database...</p>
         </div>
 
         <div id="results-grid">
@@ -375,17 +437,33 @@
         const loader = document.getElementById('loading');
         const submitBtn = document.getElementById('submit-btn');
 
+        // Show/hide country based on region
+        document.getElementById('region').addEventListener('change', function (e) {
+            const countryGroup = document.getElementById('country-group');
+            if (e.target.value === 'Europe') {
+                countryGroup.style.display = 'block';
+            } else {
+                countryGroup.style.display = 'none';
+            }
+        });
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             // Clear previous results
             resultsGrid.innerHTML = '';
             loader.style.display = 'flex';
             submitBtn.disabled = true;
 
+            const region = document.getElementById('region').value;
+            const country = document.getElementById('country').value; // Get country value
+
             const formData = {
+                region: region,
+                country: region === 'Europe' ? country : null,
                 make: document.getElementById('make').value || null,
                 model: document.getElementById('model').value || null,
+                variant: document.getElementById('variant').value || null,
                 year_min: parseInt(document.getElementById('year_min').value) || null,
                 year_max: parseInt(document.getElementById('year_max').value) || null,
                 mileage_max: parseInt(document.getElementById('mileage_max').value) || null,
@@ -406,9 +484,9 @@
 
                 if (result.status === 'success' && result.data.length > 0) {
                     if (result.evaluation) {
-                        renderEvaluation(result.evaluation);
+                        renderEvaluation(result.evaluation, result.currency);
                     }
-                    renderResults(result.data);
+                    renderResults(result.data, result.currency);
                 } else {
                     resultsGrid.innerHTML = '<div class="empty-state">No vehicles found matching your criteria</div>';
                 }
@@ -420,14 +498,14 @@
             }
         });
 
-        function renderEvaluation(eval) {
+        function renderEvaluation(eval, currency = 'AED') {
             const evalCard = document.createElement('div');
             evalCard.className = 'evaluation-card';
-            
+
             evalCard.innerHTML = `
                 <div class="eval-item">
                     <div class="eval-label">Average Market Price</div>
-                    <div class="eval-value">${Math.round(eval.average_price).toLocaleString()} AED</div>
+                    <div class="eval-value">${Math.round(eval.average_price).toLocaleString()} ${currency}</div>
                     <div class="eval-robust">${eval.is_robust ? '✓ Filtered Outliers' : '⚠ Limited Data'}</div>
                 </div>
                 <div class="eval-item">
@@ -439,12 +517,12 @@
             resultsGrid.appendChild(evalCard);
         }
 
-        function renderResults(cars) {
+        function renderResults(cars, currency = 'AED') {
             cars.forEach((car, index) => {
                 const card = document.createElement('div');
                 card.className = 'car-card';
                 card.style.animationDelay = `${index * 0.05}s`;
-                
+
                 card.innerHTML = `
                     <div class="card-image-container" onclick="window.open('${car.listing_url}', '_blank')">
                         <img src="${(car.image_url && car.image_url !== 'N/A') ? car.image_url : 'https://via.placeholder.com/400x300?text=No+Image+Available'}" 
@@ -454,7 +532,7 @@
                     </div>
                     <div class="card-content" onclick="window.open('${car.listing_url}', '_blank')">
                         <div class="card-title">${car.title}</div>
-                        <div class="card-price">${typeof car.price === 'number' ? car.price.toLocaleString() : car.price} AED</div>
+                        <div class="card-price">${typeof car.price === 'number' ? car.price.toLocaleString() : car.price} ${currency}</div>
                         <div class="card-info">
                             <div class="info-item">📅 ${car.year}</div>
                             <div class="info-item">🛣️ ${typeof car.mileage === 'number' ? car.mileage.toLocaleString() : car.mileage} KM</div>
@@ -468,4 +546,5 @@
         }
     </script>
 </body>
+
 </html>

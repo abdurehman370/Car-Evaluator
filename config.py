@@ -1,3 +1,4 @@
+import os
 # Dubizzle Scraper Configuration
 
 # API Constants
@@ -29,4 +30,37 @@ DEFAULT_HEADERS = {
     "Origin": "https://uae.dubizzle.com",
     "x-algolia-api-key": ALGOLIA_API_KEY,
     "x-algolia-application-id": ALGOLIA_APP_ID
+}
+
+# Region Configuration
+REGION_CONFIG = {
+    "UAE": {
+        "currency": "AED",
+        "flag": "🇦🇪",
+        "api_type": "algolia"
+    },
+    "Lebanon": {
+        "currency": "$",
+        "flag": "🇱🇧",
+        "api_type": "rest",
+        "base_url": "https://www.olx.com.lb/api/relevance/search",
+        "listing_url_template": "https://www.olx.com.lb/motors/used-cars/{slug}"
+    },
+    "Europe": {
+        "currency": "EUR",
+        "flag": "🇪🇺",
+        "api_type": "html",
+        "countries": {
+            "Germany": "de",
+            "France": "fr",
+            "Netherlands": "nl",
+            "Italy": "it",
+            "Belgium": "be",
+            "Austria": "at",
+            "Spain": "es"
+        },
+        "base_url_template": "https://www.autoscout24.{tld}",
+        # Token for Scrape.do or similar proxy service
+        "proxy_token": os.getenv("SCRAPE_DO_TOKEN", "") 
+    }
 }

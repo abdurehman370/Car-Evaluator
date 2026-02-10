@@ -17,3 +17,9 @@ ms-playwright/
 # OS
 .DS_Store
 Thumbs.db
+SCRAPING_ARCHITECTURE.md
+.env
+
+# Data and Results
+results_*.json
+*_data.json
